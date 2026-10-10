@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>大阪八日行</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<style>
+/* 版面沿用「關西6日遊」：照片橫幅、膠囊按鈕、日卡片、時間軸、備註框。 */
+:root{
+  /* 文青配色：白底、霧藍、陶土紅印章、沙色備註，冷灰文字；標題用襯線字 */
+  --bg:#ffffff; --card:#ffffff; --ink:#2c3640; --text:#4c5761; --muted:#84909b; --line:#dfe8ef; --hover:#f6fafc;
+  --primary:#4a789e; --primary-ink:#ffffff; --primary-soft:#e6f0f7; --primary-deep:#2f5878;
+  --pill:#eef4f8; --pill-ink:#5d6b78;
+  --note-bg:#faf5ea; --note-line:#d4b06a; --note-ink:#7a5a22;
+  --stamp:#b5654a; --ok:#6fa3c4; --famB:#a8683f;
+  --hero-a:#4f7fa6; --hero-b:#9cc0d8; --hero-ink:#ffffff;
+  /* 標楷體：電腦用內建的標楷體，手機沒有內建時改用網路字型「霞鶩文楷」 */
+  --font:"DFKai-SB","標楷體","BiauKai","BiauKaiTC","Kaiti TC","LXGW WenKai TC","KaiTi",serif;
+  --serif:var(--font);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:19.2px;line-height:1.6}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{color:var(--ink);text-wrap:balance}
+h1,h2,h3,.day-title,.now strong,.stamp,.group-title,.big{font-family:var(--serif)}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+input,select,button{font:inherit}
+input,select{color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 10px;max-width:100%}
+
+.hero{min-height:250px;padding:32px 16px;background:linear-gradient(135deg,var(--hero-a),var(--hero-b));background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--hero-ink)}
+.hero h1{color:var(--hero-ink);font-size:clamp(40.8px,9.6vw,57.6px);font-weight:700;margin-bottom:8px}
+.hero p{font-size:21.6px;opacity:.9}
+.wrap{max-width:896px;margin:0 auto;padding-inline:16px;padding-block:24px 40px}
+
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pills.sub{margin-top:12px}
+.pill{padding:7px 15px;border-radius:9999px;border:1.5px solid var(--primary-deep);background:var(--pill);color:var(--pill-ink);font-size:16.8px;font-weight:500;cursor:pointer;white-space:nowrap}
+.pill.active{background:var(--primary);color:var(--primary-ink)}
+.pill.sm{padding:5px 12px;font-size:15.6px}
+.status{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;margin-top:14px;padding-bottom:16px;border-bottom:1px solid var(--line);font-size:16.8px;color:var(--muted)}
+.status label{display:flex;gap:8px;align-items:center}
+.status select{padding:4px 8px}
+.view{display:grid;gap:16px;margin-top:20px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.card{background:var(--card);border-radius:12px;border:1px solid var(--line);box-shadow:0 1px 2px rgba(60,50,40,.04);padding:20px;min-width:0}
+.card h2{font-size:24px;font-weight:700}
+.card h3{font-size:19.2px;font-weight:700;margin-bottom:10px}
+.head{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.row label{display:flex;gap:8px;align-items:center;font-size:16.8px;color:var(--muted)}
+.muted{color:var(--muted);font-size:16.8px}
+.big{font-size:36px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.2}
+.tag{display:inline-block;font-size:14.4px;font-weight:700;background:var(--note-bg);color:var(--note-ink);border-radius:4px;padding:2px 8px}
+.btn{padding:8px 16px;border-radius:8px;border:0;background:var(--primary);color:var(--primary-ink);font-size:16.8px;font-weight:600;cursor:pointer}
+.btn.ghost{background:var(--pill);color:var(--pill-ink)}
+.btn.x{padding:3px 10px;background:transparent;color:var(--muted);border:1px solid var(--line)}
+.track{height:8px;background:var(--pill);border-radius:4px;overflow:hidden;margin-top:8px}
+.track i{display:block;height:100%;background:var(--ok)}
+
+/* 今日橫幅 */
+.now{background:var(--primary);color:var(--primary-ink);border-radius:12px;padding:22px 20px;display:grid;gap:4px}
+.now small{font-size:15.6px;font-weight:600;letter-spacing:.08em;opacity:.85}
+.now strong{font-size:clamp(31.2px,8.4vw,43.2px);font-weight:700;line-height:1.2}
+.now span{opacity:.9}
+
+/* 日卡片 */
+.day-card{background:var(--card);border-radius:12px;overflow:hidden;border:1px solid var(--line);box-shadow:0 1px 2px rgba(60,50,40,.04);min-width:0}
+.day-header{width:100%;padding:20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--card);border:0;text-align:left;color:var(--text)}
+.day-header:hover{background:var(--hover)}
+.badge{background:var(--primary-soft);color:var(--primary-deep);padding:4px 8px;border-radius:4px;font-size:14.4px;font-weight:700;margin-right:8px;white-space:nowrap}
+.day-title{font-weight:700;font-size:19.2px}
+.toggle-icon{color:var(--muted);flex:none}
+.day-card.open .toggle-icon{transform:rotate(90deg)}
+.day-content{display:none;border-top:1px solid var(--line);padding:20px}
+.day-card.open .day-content{display:block}
+.day-img{width:100%;height:150px;background-size:cover;background-position:center;border-radius:8px;margin-bottom:16px;background-color:var(--pill)}
+.ev{position:relative;padding-left:32px;padding-bottom:24px;border-left:2px solid var(--line);margin-left:6px}
+.ev:last-child{padding-bottom:4px}
+.ev::before{content:"";position:absolute;left:-7px;top:0;width:12px;height:12px;border-radius:50%;background:var(--primary);border:2px solid var(--card)}
+.ev-time{font-weight:600;color:var(--primary);font-size:16.8px;line-height:1;margin-bottom:6px;font-variant-numeric:tabular-nums}
+.ev-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.ev-row>div:first-child{min-width:0}
+.ev-detail{font-weight:500}
+.ev-detail.hl{color:var(--ink);font-size:20.1px}
+.ev-tr{font-size:14.4px;color:var(--muted);margin-top:4px}
+.ev-note{font-size:15.6px;color:var(--note-ink);background:var(--note-bg);border-radius:6px;padding:4px 8px;margin-top:6px;display:inline-block}
+.ev-act{display:flex;gap:6px;align-items:center;flex:none}
+.pin{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--bg);text-decoration:none}
+.pin:hover{background:var(--primary-soft)}
+.mini{border:1px dashed var(--stamp);color:var(--stamp);background:transparent;border-radius:9999px;font-size:14.4px;font-weight:700;padding:5px 10px;cursor:pointer;white-space:nowrap}
+.mini.got{border-style:solid;background:var(--stamp);color:var(--card)}
+.ev.past{opacity:.45}
+.ev.next::before{box-shadow:0 0 0 4px var(--primary-soft)}
+.ev.next .ev-time::after{content:"下一站";margin-left:8px;background:var(--primary);color:var(--primary-ink);border-radius:4px;padding:2px 6px;font-size:13.2px}
+.note{margin-top:16px;padding:12px;background:var(--note-bg);border-left:4px solid var(--note-line);color:var(--note-ink);font-size:16.8px}
+
+/* 路線圖 */
+.mapwrap{position:relative}
+.mapinfo{position:absolute;top:10px;left:10px;max-width:min(62%,300px);background:var(--card);border:1px solid var(--line);border-left:4px solid var(--primary);border-radius:6px;padding:8px 12px;font-size:13px;line-height:1.5;box-shadow:0 2px 8px rgba(40,60,80,.12);pointer-events:none}
+.mapinfo strong{display:block;font-family:var(--serif);font-size:15px;color:var(--ink)}
+.mapbox{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+.mapbox svg{display:block;width:100%;min-width:620px;height:auto}
+.edge{stroke:var(--line);stroke-width:5;stroke-linecap:round;fill:none}
+.edge.air{stroke-dasharray:4 9}
+.active{stroke:var(--primary);stroke-width:7;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.veh{pointer-events:none}
+.node{cursor:pointer}
+.node circle{fill:var(--card);stroke:var(--muted);stroke-width:3}
+.node.on circle{stroke:var(--primary);stroke-width:5}
+.node.home circle{fill:var(--ink);stroke:var(--ink)}
+.node.sel circle{fill:var(--primary);stroke:var(--primary)}
+.node text{font-family:var(--font);font-size:15px;font-weight:700;fill:var(--ink);paint-order:stroke;stroke:var(--card);stroke-width:5px;stroke-linejoin:round}
+.node:not(.on) text{fill:var(--muted);font-weight:500}
+.sea{font-size:12px;letter-spacing:.3em;fill:var(--muted)}
+
+/* 集章 */
+.stamps{display:flex;flex-wrap:wrap;gap:10px}
+.stamp{width:104px;height:104px;border-radius:50%;border:2px dashed var(--line);background:transparent;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:15.6px;font-weight:700;line-height:1.25;padding:6px;text-align:center}
+.stamp small{font-size:12px;font-weight:400}
+.stamp.got{border:3px double var(--stamp);color:var(--stamp);box-shadow:inset 0 0 0 3px var(--card),inset 0 0 0 4px var(--stamp);transform:rotate(var(--r,-5deg))}
+@media (prefers-reduced-motion:no-preference){.stamp.got{animation:thump .25s ease-out}@keyframes thump{from{transform:scale(1.5) rotate(var(--r,-5deg));opacity:.2}}}
+.rk{display:grid;grid-template-columns:5em 1fr 3.4em;gap:10px;align-items:center;font-size:16.8px}
+.rk span:last-child{text-align:right}
+.banner{background:var(--stamp);color:var(--card);border-radius:12px;padding:14px 20px;font-weight:700;text-align:center}
+
+/* 記帳 */
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;align-items:end}
+.form label{display:grid;gap:3px;font-size:15.6px;color:var(--muted);min-width:0}
+.form input,.form select{width:100%}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:16.8px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:14.4px;color:var(--muted);font-weight:700}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.bars{display:grid;gap:8px}
+.bar{display:grid;grid-template-columns:2.6em 1fr 5.2em;gap:10px;align-items:center;font-size:16.8px}
+.bar-track{height:12px;background:var(--pill);border-radius:6px}
+.bar-fill{height:100%;background:var(--primary);border-radius:6px}
+.bar span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 16px;font-size:16.8px;margin:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.settle{margin-top:12px;padding:12px;background:var(--primary-soft);color:var(--ink);border-radius:8px;font-weight:700}
+.fa{color:var(--primary);font-weight:700;white-space:nowrap}.fb{color:var(--famB);font-weight:700;white-space:nowrap}
+
+/* 清單 */
+.group-title{font-weight:700;color:var(--ink);border-bottom:1px solid var(--line);padding-bottom:8px;margin:24px 0 8px}
+.group-title:first-child{margin-top:0}
+.todo{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px}
+.todo:hover{background:var(--hover)}
+.todo input{width:20px;height:20px;accent-color:var(--primary);flex:none;padding:0}
+.todo input:checked + span{text-decoration:line-through;color:var(--muted)}
+footer{margin-top:24px;color:var(--muted);font-size:15.6px}
+/* 所有按鈕文字加粗 */
+button,.pill,.btn,.mini,.stamp,.pin{font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="hero" id="hero"><div><h1 id="hTitle"></h1><p id="hSub"></p></div></div>
+
+<div class="wrap">
+  <header>
+    <div class="pills" id="pills">
+      <button class="pill" type="button" data-v="today">📅 今日</button>
+      <button class="pill" type="button" data-v="trip">🗓 全部行程</button>
+      <button class="pill" type="button" data-v="map">🗺 路線圖</button>
+      <button class="pill" type="button" data-v="stamps">🎫 集章</button>
+      <button class="pill" type="button" data-v="money">💰 記帳</button>
+      <button class="pill" type="button" data-v="list">📝 準備清單</button>
+    </div>
+    <div class="pills sub" id="dayPills" hidden></div>
+    <div class="status"><span id="sync"></span><label for="who">我是 <select id="who"></select></label></div>
+  </header>
+
+  <div class="view" id="v-today">
+    <div class="now" id="now"></div>
+    <div class="row">
+      <label for="preview">顯示 <select id="preview"></select></label>
+    </div>
+    <div id="todayBody" class="view" style="margin-top:0"></div>
+  </div>
+
+  <div class="view" id="v-trip" hidden></div>
+
+  <div class="view" id="v-map" hidden>
+    <div class="card">
+      <div class="head"><h2>路線圖</h2><span class="tag">示意圖，非實際比例</span></div>
+      <div class="row" style="margin-bottom:14px"><div class="pills" id="mapPills"></div><button class="btn" id="play" type="button">▶ 播放八天</button></div>
+      <div class="mapwrap"><div class="mapbox"><svg id="map" viewBox="0 0 800 352" role="img" aria-label="關西路線示意圖"></svg></div><div class="mapinfo" id="mapInfo" hidden></div></div>
+      <p class="muted" id="mapEmpty" style="margin-top:10px" hidden>還沒有站點資料。請在試算表的 Nodes 工作表新增站點。</p>
+    </div>
+    <div id="mapDay"></div>
+  </div>
+
+  <div class="view" id="v-stamps" hidden>
+    <div class="card"><div class="head" style="margin-bottom:0"><div><h2 id="stampTitle">集章</h2><p class="muted" id="stampHint"></p></div><span class="big" id="stampCount"></span></div></div>
+    <div class="card"><h3>兩家進度</h3><div class="bars" id="rank"></div></div>
+    <div class="banner" id="stampDone" hidden>全部集滿，旅程完成 🎉</div>
+    <div id="book" class="view" style="margin-top:0"></div>
+  </div>
+
+  <div class="view" id="v-money" hidden>
+    <div class="card">
+      <div class="head"><h2>記帳</h2><span class="muted" id="rateNote"></span></div>
+      <form class="form" id="expForm">
+        <label for="eDay">哪一天<select id="eDay"></select></label>
+        <label for="eItem">項目<input id="eItem" type="text" placeholder="例如：章魚燒" maxlength="60" required></label>
+        <label for="eAmt">金額（日圓）<input id="eAmt" type="number" min="1" step="1" inputmode="numeric" required></label>
+        <label for="eCat">類別<select id="eCat"></select></label>
+        <label for="ePay">誰付的<select id="ePay"></select></label>
+        <label for="eSplit">怎麼分<select id="eSplit"></select></label>
+        <button class="btn" type="submit">記一筆</button>
+      </form>
+    </div>
+    <div class="grid2">
+      <div class="card"><h3>結算</h3><dl class="kv" id="sumKv"></dl><div class="settle" id="settle"></div></div>
+      <div class="card"><h3>各類別花費</h3><div class="bars" id="catBars"></div></div>
+    </div>
+    <div class="card"><h3>明細</h3><div class="tbl"><table><thead><tr><th>日</th><th>項目</th><th>類別</th><th class="r">日圓</th><th>付款</th><th>分攤</th><th></th></tr></thead><tbody id="expRows"></tbody></table></div></div>
+  </div>
+
+  <div class="view" id="v-list" hidden>
+    <div class="card">
+      <div class="head"><h2>準備清單</h2><span class="big" id="listCount"></span></div>
+      <div id="checklist"></div>
+    </div>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+/* 所有內容都從 Google Sheet 讀寫。API 是 Apps Script 網頁應用程式的網址。 */
+const CONFIG = { API:"https://script.google.com/macros/s/AKfycbyX3Vlqbm_mxI7CRMNjrGq10nc1IgY-rwi_libVNldosn0T9ErmNGtzGks9HdNzZTfixQ/exec", KEY:"osaka8d_v4" };
+const CATS = ["餐飲","交通","門票","購物","住宿","其他"];
+/* 路線圖站點：來自試算表的 Nodes 工作表（key, name, x, y, label, type, desc）。畫布是 800 × 620。 */
+const MAP_YS = 0.56;   // 路線圖上下壓縮比例：試算表的 y 仍填 0–620，顯示時乘上這個數字
+/* 交通圖示：依 transport 文字裡最先出現的關鍵字決定 */
+const TR = [["新幹線","🚄"],["地鐵","🚇"],["電車","🚃"],["JR","🚃"],["列車","🚃"],["鐵","🚃"],["巴士","🚌"],["公車","🚌"],["計程車","🚕"],["租車","🚗"],["開車","🚗"],["自駕","🚗"],["車程","🚗"],
+  ["飛","✈️"],["航班","✈️"],["班機","✈️"],["步行","🚶"],["走路","🚶"],["徒步","🚶"],["渡輪","⛴️"],["船","⛴️"],["纜車","🚠"],["腳踏車","🚲"],["單車","🚲"]];
+function trIcon(t){ let best = "➡️", pos = 1e9; TR.forEach(([k,i]) => { const p = String(t || "").indexOf(k); if(p >= 0 && p < pos){ pos = p; best = i; } }); return best; }
+/* 路線圖動畫用的交通工具：標題寫租車就用車，否則取當天最常出現的交通方式 */
+function dayVehicle(d){
+  if(/租車|自駕|開車/.test(d.title || "")) return "🚗";
+  const c = {}; d.events.forEach(e => { const i = trIcon(e.transport); if(!["➡️","🚶","✈️"].includes(i)) c[i] = (c[i] || 0) + 1; });
+  return Object.keys(c).sort((a,b) => c[b] - c[a])[0] || "🚃";
+}
+let anim = 0;
+let endT = 0;
+const CARD_MS = 1000;   // 每張資訊卡至少停留的時間
+/* rt＝這次要播放的路段；full＝當天完整路線；done＝播完並停留後要做的事（播放八天時用來接下一天） */
+function runVehicle(rt, veh, still, full, done){
+  cancelAnimationFrame(anim); clearTimeout(endT);
+  const v = $("map").querySelector(".veh"), line = $("map").querySelector("polyline.active");
+  const finish = () => { endT = setTimeout(() => done ? done() : setInfo(selNode), CARD_MS); };
+  if(!v || !rt.length){ setInfo(selNode); return done && finish(); }
+  const dist = (a,b) => Math.hypot(NODES[b].x - NODES[a].x, NODES[b].y - NODES[a].y), len = r => r.reduce((t,k,i) => i ? t + dist(r[i-1], k) : 0, 0);
+  const pts = rt.map(k => NODES[k]), seg = rt.slice(1).map((k,i) => dist(rt[i], k)), total = len(rt), fullLen = len(full || rt) || total || 1;
+  const place = (i, f) => { const a = pts[i], b = pts[Math.min(i + 1, pts.length - 1)];
+    v.setAttribute("x", a.x + (b.x - a.x) * f); v.setAttribute("y", a.y + (b.y - a.y) * f);
+    v.textContent = (rt[i] === "tpe" || rt[i+1] === "tpe") ? "✈️" : veh;
+    if(line){ const gone = seg.slice(0, i).reduce((t,x) => t + x, 0) + (seg[i] || 0) * f; line.style.strokeDasharray = "1"; line.style.strokeDashoffset = total ? 1 - gone / total : 0; } };
+  if(still || rt.length < 2 || !total || matchMedia("(prefers-reduced-motion: reduce)").matches){
+    place(Math.max(0, rt.length - 2), rt.length > 1 ? 1 : 0); if(line) line.style.strokeDasharray = "none";
+    if(still){ return setInfo(selNode); } setInfo(rt[rt.length - 1]); return finish(); }
+  const durs = seg.map(L => Math.max(CARD_MS, 2400 * L / fullLen)), t0 = performance.now(); let shown = null;
+  const step = now => { let e = now - t0, i = 0; while(i < durs.length - 1 && e >= durs[i]){ e -= durs[i]; i++; }
+    const end = e >= durs[i]; place(i, end ? 1 : e / durs[i]);
+    const at = end ? rt[rt.length - 1] : rt[i]; if(at !== shown){ shown = at; setInfo(at); }
+    if(end) finish(); else anim = requestAnimationFrame(step); };
+  step(t0);
+}
+/* 地圖左上角的站點說明：點了站點或播放中才顯示 */
+function setInfo(k){ const n = k && NODES[k], el = $("mapInfo"); el.hidden = !n; if(n) el.innerHTML = `<strong>${esc(n.name)}</strong>${esc(n.desc)}`; }
+function nodeMap(){
+  const off = {"上":[0,-22,"middle"], "下":[0,30,"middle"], "左":[-14,5,"end"], "右":[14,5,"start"]}, m = {};
+  (DATA.nodes || []).forEach(r => { const k = String(r.key || "").trim(), x = +r.x, y = +r.y * MAP_YS; if(!k || !isFinite(x) || !isFinite(y) || r.x === "" || r.y === "") return;
+    const o = off[r.label] || off["右"]; m[k] = {x, y, name:r.name || k, l:[x + o[0], y + o[1], o[2]], desc:r.desc || "", home:r.type === "住宿", text:r.type === "地名"}; });
+  return m;
+}
+let NODES = {};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const p2 = n => String(n).padStart(2,"0");
+const yen = n => "¥" + Math.round(n).toLocaleString("en-US");
+
+function load(){ try{ return JSON.parse(localStorage.getItem(CONFIG.KEY)) || {}; }catch(e){ return {}; } }
+function save(){ try{ localStorage.setItem(CONFIG.KEY, JSON.stringify(S)); }catch(e){} }
+let S = Object.assign({checked:{},stamps:{},exp:null,queue:[],start:"",fam:null,rate:null,view:"today",tripDay:"all",mapDay:0,cache:null,who:"",whoIdx:""}, load());
+S.mapDay = 0;   // 路線圖每次開啟都從第一天開始
+if(!S.exp) S.exp = [];
+let DATA = S.cache || {trip:{}, days:[], checklist:[]};
+let loadErr = false, loaded = false, preview = "auto", selNode = null, mapStop = null, timer = null, flushing = false;
+
+const trip = () => DATA.trip || {};
+const fam = () => [trip().famA || "第一家", trip().famB || "第二家"];
+const rate = () => +trip().rate || 0;
+const ntd = n => "NT$" + Math.round(n * rate()).toLocaleString("en-US");
+const nowStr = () => { const d = new Date(); return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`; };
+
+/* ---------- 同步 ---------- */
+function setSync(t){ $("sync").textContent = t; }
+/* 集章：一家一本，由「我是」決定蓋在哪一本。A1＝第一家、B1＝第二家。 */
+const people = () => fam().map((name,f) => ({key:"AB"[f] + "1", name, fam:f}));
+const person = () => S.whoIdx === "" ? null : people()[+S.whoIdx];
+const sk = id => id + "|" + person().key;
+const pname = () => person() ? person().name : "尚未選擇";
+const hasStamp = (id, key) => { const k = key || (person() && person().key); return k ? S.stamps[id + "|" + k] : undefined; };
+const whoName = () => S.whoIdx === "" ? "" : (fam()[+S.whoIdx] || "");
+function send(body){ body.who = whoName(); S.queue.push(body); save(); flush(); }
+async function flush(){
+  if(flushing) return; flushing = true;
+  try{
+    while(S.queue.length){
+      const r = await fetch(CONFIG.API, {method:"POST", headers:{"Content-Type":"text/plain"}, body:JSON.stringify(S.queue[0])});
+      if(!r.ok) throw new Error(r.status);
+      S.queue.shift(); save();
+    }
+    setSync("✅ 已與 Google Sheet 同步");
+  }catch(e){ setSync(`⚠️ 離線中，${S.queue.length} 筆待補傳`); }
+  flushing = false;
+}
+async function refresh(){
+  setSync("正在同步...");
+  await flush();
+  let j;
+  try{
+    const r = await fetch(CONFIG.API + "?t=" + Date.now()); if(!r.ok) throw new Error("HTTP " + r.status);
+    j = await r.json(); if(!j || !Array.isArray(j.days)) throw new Error("回傳的資料格式不對");
+  }catch(e){ loadErr = true; setSync((S.cache ? "⚠️ 載入失敗，顯示上次同步的版本" : "⚠️ 載入失敗，請確認網路後重新整理") + "（" + e.message + "）"); renderToday(); return; }
+  const st = j.state || {}; delete j.state; j.checklist = j.checklist || [];
+  // 還有沒傳出去的操作時，先保留這台裝置上的勾選與帳目，等補傳完再以試算表為準
+  if(!S.queue.length){
+    S.checked = st.checked || {}; S.stamps = st.stamps || {};
+    S.exp = (st.expenses || []).map(e => ({id:e.id, day:+e.day, item:e.item, amt:+e.amt, cat:e.cat, pay:+e.pay, split:e.split}));
+  }
+  DATA = S.cache = j; loadErr = false; loaded = true; save();
+  try{ renderAll(); setSync(S.queue.length ? `⚠️ 行程已更新，但有 ${S.queue.length} 筆操作還沒傳出去` : j.days.length ? "✅ 已與 Google Sheet 同步" : "⚠️ 已連上試算表，但沒有讀到任何一天的行程"); }
+  catch(e){ setSync("⚠️ 顯示資料時發生錯誤：" + e.message); }
+}
+
+/* ---------- 日期 ---------- */
+function startDate(){ const s = trip().startDate || "2026-01-01", a = s.split(/[-/]/).map(Number); return new Date(a[0], a[1]-1, a[2]); }
+function realIndex(){ const t = new Date(); t.setHours(0,0,0,0); return Math.round((t - startDate()) / 86400000); }
+function dayDate(i){ const d = DATA.days[i]; if(d && d.date) return d.date; const x = startDate(); x.setDate(x.getDate()+i); return `${x.getMonth()+1}/${x.getDate()}（${"日一二三四五六"[x.getDay()]}）`; }
+
+/* ---------- 行程卡片 ---------- */
+function stampable(){ const a = []; DATA.days.forEach((d,di) => d.events.forEach(e => { if(e.stamp) a.push({id:e.id, name:e.stamp, di}); })); return a; }
+function dayCard(d, live){
+  const i = DATA.days.indexOf(d), now = new Date(), hm = p2(now.getHours()) + ":" + p2(now.getMinutes()); let nextDone = false;
+  const evs = d.events.map(e => {
+    let c = ""; if(live && e.time){ if(e.time <= hm) c = "past"; else if(!nextDone){ c = "next"; nextDone = true; } }
+    const plain = !e.transport && !e.mapLocation, got = hasStamp(e.id);
+    return `<div class="ev ${c}"><div class="ev-time">${esc(e.time)}</div><div class="ev-row"><div><p class="ev-detail ${plain?"hl":""}">${esc(e.detail)}</p>${e.transport ? `<p class="ev-tr">${trIcon(e.transport)} ${esc(e.transport)}</p>` : ""}${e.note ? `<p class="ev-note">💡 ${esc(e.note)}</p>` : ""}</div>
+      <div class="ev-act">${e.stamp ? `<button class="mini ${got?"got":""}" type="button" data-stamp="${esc(e.id)}" aria-pressed="${!!got}">${got?"已蓋章":"🎫 蓋章"}</button>` : ""}
+      ${e.mapLocation ? `<a class="pin" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.mapLocation)}" target="_blank" rel="noopener" aria-label="在 Google 地圖開啟 ${esc(e.mapLocation)}">📍</a>` : ""}</div></div></div>`; }).join("");
+  const img = d.image ? `<div class="day-img" style="background-image:url('${esc(encodeURI(d.image).replace(/'/g,"%27"))}')"></div>` : "";
+  return `<div class="day-card open"><button class="day-header" type="button" data-toggle aria-expanded="true"><span><span class="badge">DAY ${esc(d.day)}</span><span class="day-title">${esc(dayDate(i))} | ${esc(d.city)} · ${esc(d.title)}</span></span><span class="toggle-icon">▶</span></button>
+    <div class="day-content">${img}<div>${evs || '<p class="muted">這一天還沒有行程。</p>'}</div>${d.notes ? `<div class="note"><strong>💡 備註:</strong> ${esc(d.notes)}</div>` : ""}</div></div>`;
+}
+function renderTrip(){
+  $("dayPills").innerHTML = `<button class="pill sm ${S.tripDay==="all"?"active":""}" type="button" data-day="all">全部</button>` +
+    DATA.days.map(d => `<button class="pill sm ${String(S.tripDay)===String(d.day)?"active":""}" type="button" data-day="${esc(d.day)}">Day ${esc(d.day)}</button>`).join("");
+  $("v-trip").innerHTML = !DATA.days.length ? '<div class="card muted">還沒有行程資料。</div>' : DATA.days.filter(d => S.tripDay === "all" || String(d.day) === String(S.tripDay)).map(d => dayCard(d, false)).join("");
+}
+
+/* ---------- 今日 ---------- */
+function totals(obj, ids){ const n = ids.filter(id => obj[id]).length; return [n, ids.length]; }
+function renderToday(){
+  const real = realIndex(), n = DATA.days.length, i = preview === "auto" ? real : +preview, live = preview === "auto" && real >= 0 && real < n;
+  const [ln, la] = totals(S.checked, DATA.checklist.map(c => c.id)), sa = stampable().length, sn = stampable().filter(x => hasStamp(x.id)).length;
+  let now, body;
+  if(!n){
+    now = loadErr ? `<small>無法連線</small><strong>行程載入失敗</strong><span>請確認網路後重新整理</span>`
+      : loaded ? `<small>已連上試算表</small><strong>沒有讀到行程</strong><span>Days 工作表沒有可用的資料</span>`
+      : `<small>請稍候</small><strong>正在載入行程...</strong><span>從 Google Sheet 讀取中</span>`;
+    body = loaded && !loadErr ? `<div class="card"><h3>請檢查試算表</h3><p>1. Days 工作表的標題列是否仍是 day、date、city、title、image、notes、route。</p><p>2. day 欄是否填數字 1、2、3…，不是「Day 1」或「第一天」。</p><p>3. 剛刪除或貼上整批資料的話，到試算表選單按「旅遊網站 → 立即更新網頁」，再重新整理這一頁。</p></div>` : "";
+  } else if(i < 0){
+    now = `<small>出發前</small><strong>還有 ${-i} 天出發</strong><span>${esc(dayDate(0))} 從臺灣出發</span>`;
+    body = `<div class="card"><h3>行前準備進度</h3><span class="big">${ln}/${la}</span><div class="track"><i style="width:${la?ln/la*100:0}%"></i></div><div class="row" style="margin-top:12px"><button class="btn" type="button" data-go="list">繼續準備</button></div></div>` + (DATA.days[0] ? dayCard(DATA.days[0], false) : "");
+  } else if(i >= n){
+    const tot = S.exp.reduce((a,e) => a + e.amt, 0);
+    now = `<small>おかえり</small><strong>旅程結束，歡迎回家</strong><span>${n} 天的行程都走完了</span>`;
+    body = `<div class="grid2"><div class="card"><h3>集章 · ${esc(pname())}</h3><span class="big">${sn}/${sa}</span></div><div class="card"><h3>總花費</h3><span class="big">${yen(tot)}</span><p class="muted">約 ${ntd(tot)}</p></div></div>`;
+  } else {
+    const d = DATA.days[i], spent = S.exp.filter(e => e.day === +d.day).reduce((a,e) => a + e.amt, 0), st = d.events.filter(e => e.stamp);
+    now = `<small>${live ? "旅途中" : "預覽"} · DAY ${esc(d.day)} · ${esc(dayDate(i))}</small><strong>${esc(d.title)}</strong><span>${esc(d.city)}</span>`;
+    body = dayCard(d, live) + `<div class="grid2"><div class="card"><h3>今日集章 · ${esc(pname())}</h3><span class="big">${st.filter(e => hasStamp(e.id)).length}/${st.length}</span><p class="muted">${person() ? `在上面的行程按「蓋章」，蓋在${esc(pname())}的集章本。` : "先在上方「我是」選擇你是哪一家，才能蓋章。"}</p></div>
+      <div class="card"><h3>今日花費</h3><span class="big">${yen(spent)}</span><p class="muted">約 ${ntd(spent)}</p><div class="row" style="margin-top:12px"><button class="btn" type="button" data-go="money" data-day="${esc(d.day)}">記一筆</button><button class="btn ghost" type="button" data-go="map" data-idx="${i}">看今日路線</button></div></div></div>`;
+  }
+  $("now").innerHTML = now; $("todayBody").innerHTML = body;
+}
+
+/* ---------- 路線圖 ---------- */
+function routeOf(d){ return String(d.route || "").split(/[,，、]/).map(s => s.trim()).filter(k => NODES[k] && !NODES[k].text); }
+function renderMap(still, done){
+  NODES = nodeMap(); const stops = Object.keys(NODES).filter(k => !NODES[k].text);
+  if(selNode && (!NODES[selNode] || NODES[selNode].text)) selNode = null;
+  $("mapEmpty").hidden = stops.length > 0;
+  if(S.mapDay >= DATA.days.length) S.mapDay = 0;
+  const d = DATA.days[S.mapDay], N = NODES, seen = new Set(), rt = d ? routeOf(d) : [], on = new Set(rt); let edges = "", play = rt;
+  if(mapStop){ let i = rt.indexOf(mapStop); if(i === 0) i = Math.max(0, rt.lastIndexOf(mapStop)); if(i >= 0) play = rt.slice(0, i + 1); }   // 點了站點：只播到那一站
+  $("mapPills").innerHTML = DATA.days.map((x,i) => `<button class="pill sm ${i===S.mapDay?"active":""}" type="button" data-mapday="${i}">Day ${esc(x.day)}</button>`).join("");
+  DATA.days.forEach(day => { const r = routeOf(day); r.forEach((a,k) => { if(!k) return; const b = r[k-1], key = [a,b].sort().join("-"); if(seen.has(key)) return; seen.add(key);
+    edges += `<line class="edge ${a==="tpe"||b==="tpe"?"air":""}" x1="${N[a].x}" y1="${N[a].y}" x2="${N[b].x}" y2="${N[b].y}"/>`; }); });
+  const nodes = stops.map(k => { const n = N[k];
+    return `<g class="node ${on.has(k)?"on":""} ${n.home?"home":""} ${k===selNode?"sel":""}" data-node="${k}" tabindex="0" role="button" aria-label="${esc(n.name)}"><circle cx="${n.x}" cy="${n.y}" r="${n.home?12:9}"/><text x="${n.l[0]}" y="${n.l[1]}" text-anchor="${n.l[2]}">${esc(n.name)}</text></g>`; }).join("");
+  $("map").innerHTML = `${Object.keys(N).filter(k => N[k].text).map(k => `<text class="sea" x="${N[k].x}" y="${N[k].y}">${esc(N[k].name)}</text>`).join("")}${edges}${play.length > 1 ? `<polyline class="active${still === true ? " still" : ""}" pathLength="1" points="${play.map(k => N[k].x + "," + N[k].y).join(" ")}"/>` : ""}${nodes}<text class="veh" text-anchor="middle" dominant-baseline="central" font-size="26"></text>`;
+  runVehicle(d ? play : [], d ? dayVehicle(d) : "", still === true, rt, done);
+  $("mapDay").innerHTML = d ? dayCard(d, false) : "";
+}
+function stopPlay(){ if(timer){ timer = null; clearTimeout(endT); setInfo(selNode); } $("play").textContent = "▶ 播放八天"; }
+/* 播放八天：一天播完、最後一張資訊卡停留夠久後才接下一天 */
+function playNext(){ if(!timer) return; if(S.mapDay >= DATA.days.length - 1) return stopPlay(); S.mapDay++; renderMap(false, playNext); }
+$("play").addEventListener("click", () => {
+  if(timer) return stopPlay();
+  $("play").textContent = "■ 停止"; selNode = mapStop = null; S.mapDay = 0; timer = 1; renderMap(false, playNext);
+});
+/* 點站點：顯示說明，並把行程跳到有經過這一站的那一天（目前這天有經過就不換） */
+function pickNode(e){ const g = e.target.closest("[data-node]"); if(!g) return; stopPlay(); selNode = mapStop = g.dataset.node;
+  const cur = DATA.days[S.mapDay], hit = DATA.days.findIndex(d => routeOf(d).includes(selNode));
+  if(!(cur && routeOf(cur).includes(selNode)) && hit >= 0){ S.mapDay = hit; save(); }
+  renderMap(); }
+$("map").addEventListener("click", pickNode);
+$("map").addEventListener("keydown", e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); pickNode(e); } });
+
+/* ---------- 集章 ---------- */
+function renderStamps(){
+  const all = stampable(), n = all.filter(s => hasStamp(s.id)).length, ppl = people(), me = person();
+  $("stampTitle").textContent = me ? `${me.name}的集章本` : "集章";
+  $("stampHint").textContent = me ? "到了就按一下蓋章，再按一次取消" : "先在上方「我是」選擇你是哪一家，才能蓋章";
+  $("rank").innerHTML = ppl.map(x => { const c = all.filter(t => hasStamp(t.id, x.key)).length;
+    return `<div class="rk"><span class="${x.fam?"fb":"fa"}">${esc(x.name)}${me && x.key===me.key?"（我）":""}</span><div class="bar-track"><div class="bar-fill" style="width:${all.length?c/all.length*100:0}%"></div></div><span class="num">${c}/${all.length}</span></div>`; }).join("");
+  $("stampCount").textContent = `${n}/${all.length}`; $("stampDone").hidden = !all.length || n < all.length;
+  $("book").innerHTML = DATA.days.map((d,di) => { const list = all.filter(s => s.di === di); if(!list.length) return "";
+    return `<div class="card"><h3><span class="badge">DAY ${esc(d.day)}</span>${esc(d.title)}</h3><div class="stamps">${list.map((s,si) => { const got = hasStamp(s.id);
+      return `<button class="stamp ${got?"got":""}" type="button" data-stamp="${esc(s.id)}" style="--r:${((di*5+si*7)%13)-6}deg" aria-pressed="${!!got}">${esc(s.name)}<small>${got ? esc(String(got).slice(5,10).replace("-","/")) : "未蓋章"}</small></button>`; }).join("")}</div></div>`; }).join("");
+}
+function toggleStamp(id){
+  const s = stampable().find(x => x.id === id); if(!s) return;
+  if(!person()){ setSync("請先在「我是」選擇你是哪一家，才能蓋章"); $("who").focus(); return; }
+  const k = sk(id), on = !S.stamps[k]; if(on) S.stamps[k] = nowStr(); else delete S.stamps[k];
+  save(); send({action:"stamp", id:k, on, text:person().name + (on?" 蓋章：":" 取消：") + s.name});
+  renderToday(); renderTrip(); renderMap(true); renderStamps();
+}
+
+/* ---------- 記帳 ---------- */
+function splitLabel(v){ return v === "both" ? "兩家均分" : `只算${fam()[+v] || ""}`; }
+function fillSelects(){
+  const keep = ["eDay","eCat","ePay","eSplit"].map(id => $(id).value), r = realIndex();
+  $("eDay").innerHTML = DATA.days.map(d => `<option value="${esc(d.day)}">Day ${esc(d.day)} ${esc(d.city)}</option>`).join("");
+  $("eCat").innerHTML = CATS.map(c => `<option>${c}</option>`).join("");
+  $("ePay").innerHTML = fam().map((f,i) => `<option value="${i}">${esc(f)}</option>`).join("");
+  $("eSplit").innerHTML = ["both","0","1"].map(v => `<option value="${v}">${esc(splitLabel(v))}</option>`).join("");
+  ["eDay","eCat","ePay","eSplit"].forEach((id,i) => { if(keep[i]) $(id).value = keep[i]; });
+  if(!keep[0] && r >= 0 && r < DATA.days.length) $("eDay").value = DATA.days[r].day;
+  if(!keep[2] && S.whoIdx !== "") $("ePay").value = S.whoIdx;
+}
+function settle(){
+  const paid = [0,0], share = [0,0];
+  S.exp.forEach(e => { const p = e.pay ? 1 : 0; paid[p] += e.amt; if(e.split === "both"){ share[0] += e.amt/2; share[1] += e.amt/2; } else share[e.split === "1" ? 1 : 0] += e.amt; });
+  return {paid, share, bal: paid[0] - share[0]};
+}
+function renderMoney(){
+  const {paid, share, bal} = settle(), tot = paid[0] + paid[1], f = fam(), cls = ["fa","fb"];
+  $("sumKv").innerHTML = `<dt>總花費</dt><dd>${yen(tot)}　${ntd(tot)}</dd>` + [0,1].map(i =>
+    `<dt><span class="${cls[i]}">${esc(f[i])}</span> 已付</dt><dd>${yen(paid[i])}</dd><dt><span class="${cls[i]}">${esc(f[i])}</span> 應負擔</dt><dd>${yen(share[i])}</dd>`).join("");
+  const from = bal > 0 ? 1 : 0, to = 1 - from;
+  $("settle").innerHTML = Math.abs(bal) < 1 ? "兩家已經打平，不用互相補錢。" : `<span class="${cls[from]}">${esc(f[from])}</span> 要給 <span class="${cls[to]}">${esc(f[to])}</span>　${yen(Math.abs(bal))}（約 ${ntd(Math.abs(bal))}）`;
+  const by = CATS.map(c => [c, S.exp.filter(e => e.cat === c).reduce((a,e) => a + e.amt, 0)]), max = Math.max(1, ...by.map(b => b[1]));
+  $("catBars").innerHTML = by.map(b => `<div class="bar"><span>${b[0]}</span><div class="bar-track"><div class="bar-fill" style="width:${(b[1]/max*100).toFixed(1)}%"></div></div><span>${yen(b[1])}</span></div>`).join("");
+  $("expRows").innerHTML = S.exp.length ? S.exp.map(e => `<tr><td class="num">D${esc(e.day)}</td><td>${esc(e.item)}</td><td>${esc(e.cat)}</td><td class="r">${yen(e.amt)}</td><td class="${cls[e.pay?1:0]}">${esc(f[e.pay?1:0])}</td><td>${esc(splitLabel(e.split))}</td><td><button class="btn x" type="button" data-del="${esc(e.id)}" aria-label="刪除 ${esc(e.item)}">刪除</button></td></tr>`).join("")
+    : `<tr><td colspan="7" class="muted">還沒有帳目。用上方表單記第一筆。</td></tr>`;
+}
+$("expForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const amt = Math.round(+$("eAmt").value), item = $("eItem").value.trim(); if(!item || !(amt > 0)) return;
+  const rec = {id:"x" + Date.now().toString(36) + Math.random().toString(36).slice(2,5), day:+$("eDay").value, item, amt, cat:$("eCat").value, pay:+$("ePay").value, split:$("eSplit").value};
+  S.exp.push(rec); save(); send({action:"expense_add", rec, text:`D${rec.day} ${item} ${yen(amt)}`});
+  $("eItem").value = ""; $("eAmt").value = ""; $("eItem").focus(); renderMoney(); renderToday();
+});
+$("expRows").addEventListener("click", e => { const b = e.target.closest("[data-del]"); if(!b) return;
+  const x = S.exp.find(v => v.id === b.dataset.del); if(!x) return; S.exp = S.exp.filter(v => v !== x); save();
+  send({action:"expense_del", id:x.id, text:`刪除：${x.item} ${yen(x.amt)}`}); renderMoney(); renderToday(); });
+
+/* ---------- 準備清單 ---------- */
+function renderList(){
+  const ids = DATA.checklist.map(c => c.id), [n, all] = totals(S.checked, ids); $("listCount").textContent = `${n}/${all}`;
+  let g = null, h = "";
+  DATA.checklist.forEach(c => { if(c.group !== g){ g = c.group; h += `<div class="group-title">${esc(g)}</div>`; }
+    h += `<label class="todo"><input type="checkbox" id="ck_${esc(c.id)}" data-check="${esc(c.id)}" ${S.checked[c.id]?"checked":""}><span>${esc(c.item)}</span></label>`; });
+  $("checklist").innerHTML = h || '<p class="muted">清單還是空的。到試算表的 Checklist 工作表新增項目。</p>';
+}
+$("checklist").addEventListener("change", e => { const id = e.target.dataset.check; if(!id) return;
+  S.checked[id] = e.target.checked; save(); const c = DATA.checklist.find(x => x.id === id);
+  send({action:"check", id, done:e.target.checked, text:(e.target.checked?"完成：":"取消：") + (c ? c.item : id)});
+  const [n, all] = totals(S.checked, DATA.checklist.map(x => x.id)); $("listCount").textContent = `${n}/${all}`; renderToday(); });
+
+/* ---------- 切換 ---------- */
+const VIEWS = ["today","trip","map","stamps","money","list"];
+function show(v){
+  if(!VIEWS.includes(v)) v = "today"; S.view = v; save(); if(v !== "map") stopPlay();
+  VIEWS.forEach(k => { $("v-" + k).hidden = k !== v; });
+  document.querySelectorAll("#pills .pill").forEach(p => p.classList.toggle("active", p.dataset.v === v));
+  $("dayPills").hidden = v !== "trip";
+  try{ history.replaceState(null, "", "#" + v); }catch(e){}
+}
+document.addEventListener("click", e => {
+  const t = e.target; let b;
+  if((b = t.closest("#pills .pill"))) return show(b.dataset.v);
+  if((b = t.closest("[data-day]")) && b.closest("#dayPills")){ S.tripDay = b.dataset.day; save(); return renderTrip(); }
+  if((b = t.closest("[data-mapday]"))){ stopPlay(); selNode = mapStop = null; S.mapDay = +b.dataset.mapday; save(); return renderMap(); }
+  if((b = t.closest("[data-stamp]"))) return toggleStamp(b.dataset.stamp);
+  if((b = t.closest("[data-toggle]"))){ const open = b.parentElement.classList.toggle("open"); return b.setAttribute("aria-expanded", open); }
+  if((b = t.closest("[data-go]"))){ if(b.dataset.idx) { S.mapDay = +b.dataset.idx; renderMap(); } if(b.dataset.day) $("eDay").value = b.dataset.day; show(b.dataset.go); window.scrollTo(0, 0); }
+});
+$("preview").addEventListener("change", e => { preview = e.target.value; renderToday(); });
+$("who").addEventListener("change", e => { S.whoIdx = e.target.value; save(); if(S.whoIdx !== "") $("ePay").value = S.whoIdx; refresh().then(() => {}); renderToday(); renderTrip(); renderMap(); renderStamps(); });
+
+function renderAll(){
+  const t = trip();
+  $("hTitle").textContent = t.title || "旅遊行程"; $("hSub").textContent = t.subtitle || "";
+  if(t.heroImage) $("hero").style.backgroundImage = `linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.3)),url("${encodeURI(t.heroImage).replace(/"/g,"%22")}")`;
+  if(S.whoIdx === "" && S.who){ const k = fam().indexOf(S.who); if(k >= 0) S.whoIdx = String(k); }
+  $("who").innerHTML = `<option value="">請選擇</option>` + fam().map((f,i) => `<option value="${i}">${esc(f)}</option>`).join(""); $("who").value = S.whoIdx;
+  $("preview").innerHTML = `<option value="auto">依實際日期</option><option value="-1">預覽：出發前</option>` + DATA.days.map((d,i) => `<option value="${i}">預覽：Day ${esc(d.day)} ${esc(d.city)}</option>`).join("");
+  $("preview").value = preview;
+  $("foot").textContent = "行程、清單、匯率與出發日請到 Google 試算表編輯，重新整理後更新。";
+  $("rateNote").textContent = `以日圓記帳，兩家結算 · 1 日圓＝新臺幣 ${rate()}`;
+  fillSelects(); renderToday(); renderTrip(); renderMap(true); renderStamps(); renderMoney(); renderList();
+}
+renderAll();
+show(location.hash.slice(1) || S.view);
+refresh();
+setInterval(() => { if(S.view === "today" && preview === "auto") renderToday(); }, 60000);
+</script>
+</body>
+</html>
