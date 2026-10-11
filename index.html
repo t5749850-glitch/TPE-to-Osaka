@@ -32,7 +32,7 @@ h1,h2,h3,.day-title,.now strong,.stamp,.group-title,.big{font-family:var(--serif
 input,select,button{font:inherit}
 input,select{color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 10px;max-width:100%}
 
-.hero{min-height:250px;padding:32px 16px;background:linear-gradient(135deg,var(--hero-a),var(--hero-b));background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--hero-ink)}
+.hero{box-sizing:border-box;width:100%;aspect-ratio:3/1;min-height:250px;max-height:520px;padding:32px 16px;background:linear-gradient(135deg,var(--hero-a),var(--hero-b));background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--hero-ink)}
 .hero h1{color:var(--hero-ink);font-size:clamp(40.8px,9.6vw,57.6px);font-weight:700;margin-bottom:8px}
 .hero p{font-size:21.6px;opacity:.9}
 .wrap{max-width:896px;margin:0 auto;padding-inline:16px;padding-block:24px 40px}
@@ -78,7 +78,7 @@ input,select{color:var(--ink);background:var(--card);border:1px solid var(--line
 .day-card.open .toggle-icon{transform:rotate(90deg)}
 .day-content{display:none;border-top:1px solid var(--line);padding:20px}
 .day-card.open .day-content{display:block}
-.day-img{width:100%;height:150px;background-size:cover;background-position:center;border-radius:8px;margin-bottom:16px;background-color:var(--pill)}
+.day-img{display:block;width:100%;height:auto;max-height:560px;object-fit:cover;border-radius:8px;margin-bottom:16px;background-color:var(--pill)}
 .ev{position:relative;padding-left:32px;padding-bottom:24px;border-left:2px solid var(--line);margin-left:6px}
 .ev:last-child{padding-bottom:4px}
 .ev::before{content:"";position:absolute;left:-7px;top:0;width:12px;height:12px;border-radius:50%;background:var(--primary);border:2px solid var(--card)}
@@ -361,7 +361,7 @@ function dayCard(d, live){
     return `<div class="ev ${c}"><div class="ev-time">${esc(e.time)}</div><div class="ev-row"><div><p class="ev-detail ${plain?"hl":""}">${esc(e.detail)}</p>${e.transport ? `<p class="ev-tr">${trIcon(e.transport)} ${esc(e.transport)}</p>` : ""}${e.note ? `<p class="ev-note">💡 ${esc(e.note)}</p>` : ""}</div>
       <div class="ev-act">${e.stamp ? `<button class="mini ${got?"got":""}" type="button" data-stamp="${esc(e.id)}" aria-pressed="${!!got}">${got?"已蓋章":"🎫 蓋章"}</button>` : ""}
       ${e.mapLocation ? `<a class="pin" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.mapLocation)}" target="_blank" rel="noopener" aria-label="在 Google 地圖開啟 ${esc(e.mapLocation)}">📍</a>` : ""}</div></div></div>`; }).join("");
-  const img = d.image ? `<div class="day-img" style="background-image:url('${esc(encodeURI(d.image).replace(/'/g,"%27"))}')"></div>` : "";
+  const img = d.image ? `<img class="day-img" src="${esc(encodeURI(d.image))}" alt="${esc(d.title)}" loading="lazy" onerror="this.hidden=true">` : "";
   return `<div class="day-card open"><button class="day-header" type="button" data-toggle aria-expanded="true"><span><span class="badge">DAY ${esc(d.day)}</span><span class="day-title">${esc(dayDate(i))} | ${esc(d.city)} · ${esc(d.title)}</span></span><span class="toggle-icon">▶</span></button>
     <div class="day-content">${img}<div>${evs || '<p class="muted">這一天還沒有行程。</p>'}</div>${d.notes ? `<div class="note"><strong>💡 備註:</strong> ${esc(d.notes)}</div>` : ""}</div></div>`;
 }
