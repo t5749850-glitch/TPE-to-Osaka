@@ -158,6 +158,14 @@ td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
 footer{margin-top:24px;color:var(--muted);font-size:15.6px}
 /* 所有按鈕文字加粗 */
 button,.pill,.btn,.mini,.stamp,.pin{font-weight:700}
+/* 手機：按鈕縮小，電腦維持原尺寸 */
+@media (max-width:600px){
+  .pills{gap:6px}
+  .pill{font-size:14px;padding:5px 11px}
+  .pill.sm{font-size:12.5px;padding:3px 9px}
+  .btn{font-size:14px;padding:7px 13px}
+  .mini{font-size:12px;padding:4px 9px}
+}
 </style>
 </head>
 <body>
