@@ -103,20 +103,20 @@ input,select{color:var(--ink);background:var(--card);border:1px solid var(--line
 .mapwrap{position:relative}
 .mapinfo{position:absolute;top:10px;left:10px;max-width:min(62%,300px);background:var(--card);border:1px solid var(--line);border-left:4px solid var(--primary);border-radius:6px;padding:8px 12px;font-size:13px;line-height:1.5;box-shadow:0 2px 8px rgba(40,60,80,.12);pointer-events:none}
 .mapinfo strong{display:block;font-family:var(--serif);font-size:15px;color:var(--ink)}
-.mapbox{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
-.mapbox svg{display:block;width:100%;min-width:620px;height:auto}
-.edge{stroke:var(--line);stroke-width:5;stroke-linecap:round;fill:none}
+.mapbox{overflow:hidden;border:1px solid var(--line);border-radius:8px}
+.mapbox svg{display:block;width:100%;height:auto;--k:1}
+.edge{stroke:var(--line);stroke-width:calc(5px * var(--k));stroke-linecap:round;fill:none}
 .edge.air{stroke-dasharray:4 9}
-.active{stroke:var(--primary);stroke-width:7;stroke-linecap:round;stroke-linejoin:round;fill:none}
-.veh{pointer-events:none}
+.active{stroke:var(--primary);stroke-width:calc(7px * var(--k));stroke-linecap:round;stroke-linejoin:round;fill:none}
+.veh{pointer-events:none;font-size:calc(26px * var(--k))}
 .node{cursor:pointer}
-.node circle{fill:var(--card);stroke:var(--muted);stroke-width:3}
-.node.on circle{stroke:var(--primary);stroke-width:5}
+.node circle{fill:var(--card);stroke:var(--muted);stroke-width:calc(3px * var(--k))}
+.node.on circle{stroke:var(--primary);stroke-width:calc(5px * var(--k))}
 .node.home circle{fill:var(--ink);stroke:var(--ink)}
 .node.sel circle{fill:var(--primary);stroke:var(--primary)}
-.node text{font-family:var(--font);font-size:15px;font-weight:700;fill:var(--ink);paint-order:stroke;stroke:var(--card);stroke-width:5px;stroke-linejoin:round}
+.node text{font-family:var(--font);font-size:calc(15px * var(--k));font-weight:700;fill:var(--ink);paint-order:stroke;stroke:var(--card);stroke-width:calc(5px * var(--k));stroke-linejoin:round}
 .node:not(.on) text{fill:var(--muted);font-weight:500}
-.sea{font-size:12px;letter-spacing:.3em;fill:var(--muted)}
+.sea{font-size:calc(12px * var(--k));letter-spacing:.3em;fill:var(--muted)}
 
 /* 集章 */
 .stamps{display:flex;flex-wrap:wrap;gap:10px}
@@ -158,6 +158,34 @@ td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
 footer{margin-top:24px;color:var(--muted);font-size:15.6px}
 /* 所有按鈕文字加粗 */
 button,.pill,.btn,.mini,.stamp,.pin{font-weight:700}
+/* 手機：文字縮小 20% */
+@media (max-width:600px){
+  body{font-size:15.4px}
+  .hero h1{font-size:clamp(32.6px,7.7vw,46.1px)}
+  .hero p{font-size:17.3px}
+  .status{font-size:13.4px}
+  .card h2{font-size:19.2px}
+  .card h3{font-size:15.4px}
+  .row label{font-size:13.4px}
+  .muted{font-size:13.4px}
+  .big{font-size:28.8px}
+  .tag{font-size:11.5px}
+  .now small{font-size:12.5px}
+  .now strong{font-size:clamp(25px,6.7vw,34.6px)}
+  .badge{font-size:11.5px}
+  .day-title{font-size:15.4px}
+  .ev-time{font-size:13.4px}
+  .ev-detail.hl{font-size:16.1px}
+  .ev-tr{font-size:11.5px}
+  .ev-note{font-size:12.5px}
+  .ev.next .ev-time::after{font-size:10.6px}
+  .note{font-size:13.4px}
+  .mapinfo{font-size:10.4px}
+  .mapinfo strong{font-size:12px}
+  .stamp{font-size:12.5px}
+  .stamp small{font-size:9.6px}
+  .mapinfo{max-width:58%;padding:5px 8px;top:6px;left:6px;border-left-width:3px}
+}
 /* 手機：按鈕縮小，電腦維持原尺寸 */
 @media (max-width:600px){
   .pills{gap:6px}
@@ -286,8 +314,11 @@ function runVehicle(rt, veh, still, full, done){
 }
 /* 地圖左上角的站點說明：點了站點或播放中才顯示 */
 function setInfo(k){ const n = k && NODES[k], el = $("mapInfo"); el.hidden = !n; if(n) el.innerHTML = `<strong>${esc(n.name)}</strong>${esc(n.desc)}`; }
+/* 地圖縮放：畫布固定 800 寬，手機上整張縮小，K 讓文字、圓點、線條相對放大，縮小後仍看得清楚 */
+let MAPK = 1;
+function mapScale(){ const w = $("map").getBoundingClientRect().width; return w ? Math.min(2.2, Math.max(1, 560 / w)) : MAPK; }
 function nodeMap(){
-  const off = {"上":[0,-22,"middle"], "下":[0,30,"middle"], "左":[-14,5,"end"], "右":[14,5,"start"]}, m = {};
+  const K = MAPK, off = {"上":[0,-22*K,"middle"], "下":[0,30*K,"middle"], "左":[-14*K,5*K,"end"], "右":[14*K,5*K,"start"]}, m = {};
   (DATA.nodes || []).forEach(r => { const k = String(r.key || "").trim(), x = +r.x, y = +r.y * MAP_YS; if(!k || !isFinite(x) || !isFinite(y) || r.x === "" || r.y === "") return;
     const o = off[r.label] || off["右"]; m[k] = {x, y, name:r.name || k, l:[x + o[0], y + o[1], o[2]], desc:r.desc || "", home:r.type === "住宿", text:r.type === "地名"}; });
   return m;
@@ -409,6 +440,7 @@ function renderToday(){
 /* ---------- 路線圖 ---------- */
 function routeOf(d){ return String(d.route || "").split(/[,，、]/).map(s => s.trim()).filter(k => NODES[k] && !NODES[k].text); }
 function renderMap(still, done){
+  MAPK = mapScale(); $("map").style.setProperty("--k", MAPK);
   NODES = nodeMap(); const stops = Object.keys(NODES).filter(k => !NODES[k].text);
   if(selNode && (!NODES[selNode] || NODES[selNode].text)) selNode = null;
   $("mapEmpty").hidden = stops.length > 0;
@@ -419,7 +451,7 @@ function renderMap(still, done){
   DATA.days.forEach(day => { const r = routeOf(day); r.forEach((a,k) => { if(!k) return; const b = r[k-1], key = [a,b].sort().join("-"); if(seen.has(key)) return; seen.add(key);
     edges += `<line class="edge ${a==="tpe"||b==="tpe"?"air":""}" x1="${N[a].x}" y1="${N[a].y}" x2="${N[b].x}" y2="${N[b].y}"/>`; }); });
   const nodes = stops.map(k => { const n = N[k];
-    return `<g class="node ${on.has(k)?"on":""} ${n.home?"home":""} ${k===selNode?"sel":""}" data-node="${k}" tabindex="0" role="button" aria-label="${esc(n.name)}"><circle cx="${n.x}" cy="${n.y}" r="${n.home?12:9}"/><text x="${n.l[0]}" y="${n.l[1]}" text-anchor="${n.l[2]}">${esc(n.name)}</text></g>`; }).join("");
+    return `<g class="node ${on.has(k)?"on":""} ${n.home?"home":""} ${k===selNode?"sel":""}" data-node="${k}" tabindex="0" role="button" aria-label="${esc(n.name)}"><circle cx="${n.x}" cy="${n.y}" r="${(n.home?12:9) * MAPK}"/><text x="${n.l[0]}" y="${n.l[1]}" text-anchor="${n.l[2]}">${esc(n.name)}</text></g>`; }).join("");
   $("map").innerHTML = `${Object.keys(N).filter(k => N[k].text).map(k => `<text class="sea" x="${N[k].x}" y="${N[k].y}">${esc(N[k].name)}</text>`).join("")}${edges}${play.length > 1 ? `<polyline class="active${still === true ? " still" : ""}" pathLength="1" points="${play.map(k => N[k].x + "," + N[k].y).join(" ")}"/>` : ""}${nodes}<text class="veh" text-anchor="middle" dominant-baseline="central" font-size="26"></text>`;
   runVehicle(d ? play : [], d ? dayVehicle(d) : "", still === true, rt, done);
   $("mapDay").innerHTML = d ? dayCard(d, false) : "";
@@ -519,6 +551,7 @@ function show(v){
   document.querySelectorAll("#pills .pill").forEach(p => p.classList.toggle("active", p.dataset.v === v));
   $("dayPills").hidden = v !== "trip";
   try{ history.replaceState(null, "", "#" + v); }catch(e){}
+  if(v === "map") renderMap(true);
 }
 document.addEventListener("click", e => {
   const t = e.target; let b;
@@ -547,6 +580,7 @@ function renderAll(){
 renderAll();
 show(location.hash.slice(1) || S.view);
 refresh();
+let rsz = 0; window.addEventListener("resize", () => { clearTimeout(rsz); rsz = setTimeout(() => { if(S.view === "map" && !timer && Math.abs(mapScale() - MAPK) > 0.05) renderMap(true); }, 200); });
 setInterval(() => { if(S.view === "today" && preview === "auto") renderToday(); }, 60000);
 </script>
 </body>
