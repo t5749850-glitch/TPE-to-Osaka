@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>大阪八日行</title>
+<title>旅遊行程與互動看板 - 京都大阪八日行</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
 <style>
@@ -362,7 +362,7 @@ async function flush(){
       if(!r.ok) throw new Error(r.status);
       S.queue.shift(); save();
     }
-    setSync("✅ 已與 Google Sheet 同步");
+    setSync("");
   }catch(e){ setSync(`⚠️ 離線中，${S.queue.length} 筆待補傳`); }
   flushing = false;
 }
@@ -381,7 +381,7 @@ async function refresh(){
     S.exp = (st.expenses || []).map(e => ({id:e.id, day:+e.day, item:e.item, amt:+e.amt, cat:e.cat, pay:+e.pay, split:e.split}));
   }
   DATA = S.cache = j; loadErr = false; loaded = true; save();
-  try{ renderAll(); setSync(S.queue.length ? `⚠️ 行程已更新，但有 ${S.queue.length} 筆操作還沒傳出去` : j.days.length ? "✅ 已與 Google Sheet 同步" : "⚠️ 已連上試算表，但沒有讀到任何一天的行程"); }
+  try{ renderAll(); setSync(S.queue.length ? `⚠️ 行程已更新，但有 ${S.queue.length} 筆操作還沒傳出去` : j.days.length ? "" : "⚠️ 已連上試算表，但沒有讀到任何一天的行程"); }
   catch(e){ setSync("⚠️ 顯示資料時發生錯誤：" + e.message); }
 }
 
